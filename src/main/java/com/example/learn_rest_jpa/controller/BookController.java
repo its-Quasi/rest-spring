@@ -36,4 +36,8 @@ public class BookController {
         return repository.save(book);
     }
 
+    @PostMapping("/api/books/{id}")
+    public void remove(@PathVariable Long id){
+        repository.deleteById(id);
+    }
 }
