@@ -10,34 +10,73 @@ import java.util.Optional;
 @RestController
 public class BookController {
 
-    private BookRepository repository;
+    private final BookRepository repository;
 
-    public BookController(BookRepository repository){
+    public BookController(BookRepository repository) {
         this.repository = repository;
     }
 
+    /**Operaciones CRUD basicas sobre una entidad sencilla*/
+
+    /**
+     * Obtener todos los libros existentes en base de datos (datos volatiles)
+     * @return
+     */
     @GetMapping("/api/books")
-    public List<Book> getAll(){
+    public List<Book> getAll() {
         return repository.findAll();
     }
 
-    //Get a book by ID
+    /**
+     * Buscar un libro por su id
+     * @param id
+     * @return
+     */
     @GetMapping("/api/books/{id}")
-    public ResponseEntity<Book> get(@PathVariable Long id){
+    public ResponseEntity<Book> findBookById(@PathVariable Long id) {
         Optional<Book> bookOptional = repository.findById(id);
-        if(bookOptional.isPresent()) {
+        if (bookOptional.isPresent()) {
             return ResponseEntity.ok(bookOptional.get());
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.notFound().build(); // libro no encontrado
     }
 
-    @PostMapping("/api/books/")
-    public Book create(@RequestBody Book book){
-        return repository.save(book);
+    /**
+     * Crear un nuevo libro
+     * @param book
+     * @return
+     */
+    @PostMapping("/api/books")
+    public ResponseEntity<Book> create(@RequestBody Book book) {
+        if (book.getId() != null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Book savedBook = repository.save(book);
+        return ResponseEntity.ok(savedBook);
     }
 
-    @PostMapping("/api/books/{id}")
-    public void remove(@PathVariable Long id){
+    /**
+     * Actualizar un libro ya existente
+     * @param book
+     * @return
+     */
+    @PutMapping("/api/books")
+    public ResponseEntity<Book> update(@RequestBody Book book) {
+        Long id = book.getId();
+        if (id == null) return ResponseEntity.badRequest().build();
+        if (!repository.existsById(id)) return ResponseEntity.notFound().build();
+        Book updatedBook = repository.save(book);
+        return ResponseEntity.ok(updatedBook);
+    }
+
+    /**
+     * Eliminar un libro mediante su id
+     * @param id
+     */
+    @DeleteMapping("/api/books/{id}")
+    public ResponseEntity<Book> remove(@PathVariable Long id){
+        if (!repository.existsById(id)) return ResponseEntity.notFound().build();
         repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

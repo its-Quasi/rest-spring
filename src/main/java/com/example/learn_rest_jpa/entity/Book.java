@@ -25,6 +25,9 @@ public class Book {
         this.releaseDate = releaseDate;
         this.online = online;
     }
+    public Long getId(){
+        return this.id;
+    }
 
     public String getAuthor() {
         return author;
